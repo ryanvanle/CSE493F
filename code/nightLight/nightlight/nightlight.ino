@@ -25,7 +25,7 @@ const int ROTATION_INPUT_PIN = A1;
 const int BUZZER_OUTPUT_PIN = 12;
 
 // photocell sensor settings
-const int MIN_PHOTOCELL_VAL = 350; // turn on LED
+const int MIN_PHOTOCELL_VAL = 800; // turn on LED
 const int MAX_PHOTOCELL_VAL = 1023; // fully on value
 
 // LED settings
@@ -85,7 +85,6 @@ void loop() {
     updateRotation();
   } else if (currentMode == 3) {
     updateGame();
-    // tba; 
   }
 
   // Serial.print(currentMode);
@@ -186,7 +185,9 @@ void updateMode() {
       isLocked = false;
       noTone(BUZZER_OUTPUT_PIN);
       isInGame = false;
+      _hue = 0;
       currentMode++;
+
     } else if (!_modeDebouncedButtonVal) {
       hasModePressedRecently = false;
     }
@@ -299,7 +300,7 @@ void updateGame() {
     currentColorIndex = random(3);
     setColor(colors[currentColorIndex][0], colors[currentColorIndex][1], colors[currentColorIndex][2]); 
   }
-  
+
 }
 
 int _leftPrevRawButtonVal = LOW;
