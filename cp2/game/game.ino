@@ -35,12 +35,12 @@ enum menuButton {
   length,
 };
 
-
+boolean hasShownIntro = false;
 menuButton currentState = play;
 boolean hasNotMenuMoverPressedRecently = true;
-
-
 int currentGame = -1;
+
+int INTRO_TIME_DELAY = 5000;
 
 void setup(){
   Serial.begin(9600);
@@ -66,7 +66,7 @@ void loop(){
   switch (currentGame) {
     case 0:
         // Code for game 0
-        break;
+        break; 
     case 1:
         displayTest();
         // Code for game 1
@@ -115,12 +115,24 @@ void displayMenu() {
   display.display();
 }
 
+
+
 void displayTest() {
+  if (!hasShownIntro) displayIntro("test");
+
+
   display.clearDisplay();
-  displayTextCenter("test", 3, 0, -16);
+  displayTextCenter("test2", 3, 0, 0);
   display.display();
+}
 
-
+void displayIntro(String verb) {
+    display.clearDisplay();
+    displayTextCenter(verb, 3, 0, 0);
+    display.display();
+    hasShownIntro = true;
+    delay(INTRO_TIME_DELAY);
+    display.clearDisplay();
 }
 
 int getRandomGame() {
