@@ -1,23 +1,3 @@
-/**************************************************************************
- This is an example for our Monochrome OLEDs based on SSD1306 drivers
-
- Pick one up today in the adafruit shop!
- ------> http://www.adafruit.com/category/63_98
-
- This example is for a 128x64 pixel display using I2C to communicate
- 3 pins are required to interface (two I2C and one reset).
-
- Adafruit invests time and resources providing this open
- source code, please support Adafruit and open-source
- hardware by purchasing products from Adafruit!
-
- Written by Limor Fried/Ladyada for Adafruit Industries,
- with contributions from the open source community.
- BSD license, check license.txt for more information
- All text above, and the splash screen below must be
- included in any redistribution.
- **************************************************************************/
-
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -36,8 +16,35 @@
 // Instantiate SSD1306 driver display object
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+// buttons
+int RIGHT_BUTTON_PIN = 13;
+int LEFT_BUTTON_PIN = 8;
+int buttonPins[] = {LEFT_BUTTON_PIN, RIGHT_BUTTON_PIN}; 
+int buttonAmount = *(&buttonPins + 1) - buttonPins;
+
+int buttonStatesValues[] = {LOW, LOW};
+int previousRawButtonValues[] = {LOW, LOW};
+int debouncedButtonValues[] = {LOW, LOW};
+unsigned long buttonStateChangeTimestamps[] = {0, 0};
+const int DEBOUNCE_WINDOW = 0; // in milliseconds
+
+// menu
+enum menuButton {
+  play,
+  score,
+  length,
+};
+
+
+menuButton currentState = play;
+boolean hasNotMenuMoverPressedRecently = true;
+
+
+int currentGame = -1;
+
 void setup(){
   Serial.begin(9600);
+  pinMode(RIGHT_BUTTON_PIN, INPUT);
   
   // Initialize the display. If it fails, print failure to Serial
   // and enter an infinite loop
@@ -46,24 +53,22 @@ void setup(){
     for (;;); // Don't proceed, loop forever
   }
 
-  // Clear the display
   display.clearDisplay();
 }
 
-int i = 0;
-int increment = 1;
-
-int currentGame = -1;
 
 // menu;
 void loop(){
+  updateButtonStates();
 
+  // Serial.println(getButtonValue(RIGHT_BUTTON_PIN));
 
-switch (currentGame) {
+  switch (currentGame) {
     case 0:
         // Code for game 0
         break;
     case 1:
+        displayTest();
         // Code for game 1
         break;
     case 2:
@@ -84,54 +89,116 @@ switch (currentGame) {
         break;
   }
 
-
-  // Empty on purpose to make a point about how graphic content persists
-  // on screen
-  // display.clearDisplay();
-  // display.fillCircle(i, 20, 10, SSD1306_WHITE);
-  // display.display();
-  // i += increment;
-
-  // if (i > 128 || i < 0) {
-  //   increment = increment * -1;
-  // }
 }
 
+int getButtonValue(int PIN_NUMBER) {
+  
+  for (int i = 0; i < buttonAmount; i++) {
+    if (buttonPins[i] == PIN_NUMBER) return debouncedButtonValues[i];
+  }
 
+  return -1;
 
-enum menuButton {
-  play,
-  score,
-  length,
-};
-
-menuButton currentState = play;
+}
 
 void displayMenu() {
   display.clearDisplay();
+  
+  if (getButtonValue(LEFT_BUTTON_PIN) == HIGH && currentState == play) {
+    currentGame = getRandomGame();
+    return;
+  }
 
-  const char title[] = "TITLE";
+  String title = "TITLE";
   displayTextCenter(title, 3, 0, -16);
   displayMenuButtons();
-
   display.display();
 }
+
+void displayTest() {
+  display.clearDisplay();
+  displayTextCenter("test", 3, 0, -16);
+  display.display();
+
+
+}
+
+int getRandomGame() {
+  return 1;
+}
+
+void updateButtonStates() {
+  
+  for (int i = 0; i < buttonAmount; i++) {
+    int rawButtonValue = digitalRead(buttonPins[i]);
+    if(rawButtonValue != previousRawButtonValues[i]) buttonStateChangeTimestamps[i] = millis();
+    
+    unsigned long difference = millis() - buttonStateChangeTimestamps[i];
+
+    if(difference >= DEBOUNCE_WINDOW) debouncedButtonValues[i] = rawButtonValue;
+    previousRawButtonValues[i] = rawButtonValue;
+  }
+}
+
+
+// menu
+// enum menuButton {
+//   play,
+//   score,
+//   length,
+// };
 
 
 void displayMenuButtons() {
 
-  // play button
-  // const char
+  String menuOptions[] = {"play", "score"};
+  int menuButtonLength = *(&menuOptions + 1) - menuOptions;
 
-  displayTextCenter("play", 2, -30, 15);
+  int xPositions[] = {3, 68};
+  int yPositions[] = {60, 60};
+  int textSize = 2;
+
+  boolean isButtonPressed = getButtonValue(RIGHT_BUTTON_PIN) == HIGH;
+  if (isButtonPressed && hasNotMenuMoverPressedRecently) {
+    currentState = (menuButton) ((currentState + 1) % length);
+
+    if (currentState == length) {
+      currentState = play; 
+    }
+
+    // Serial.println()
+    hasNotMenuMoverPressedRecently = false;
+  } else if (!isButtonPressed) {
+    hasNotMenuMoverPressedRecently = true;
+  }
+
+
+  for (int i = 0; i < menuButtonLength; i++) {
+    displayText(menuOptions[i], textSize, xPositions[i], yPositions[i]);
+    if ((menuButton) i == currentState) {
+      drawUnderline(menuOptions[i], xPositions[i], yPositions[i]);
+    }
+  }
+
   // displayTextCenter("play", 2, -30, 15);
 
 }
 
+void drawUnderline(String text, int xPosition, int yPosition) {
+  int16_t x;
+  int16_t y;
+  uint16_t textWidth;
+  uint16_t textHeight;
+
+  display.getTextBounds(text, 0, 0, &x, &y, &textWidth, &textHeight);
+
+  int offset = 2;
+  display.drawFastHLine(xPosition - 1, yPosition + offset, textWidth, WHITE);
 
 
+}
 
-void displayTextCenter(const char text[], uint8_t textSize, int16_t xOffset, int16_t yOffset) {
+void displayTextCenter(String text, uint8_t textSize, int16_t xOffset, int16_t yOffset) {
   int16_t x;
   int16_t y;
   uint16_t textWidth;
@@ -143,6 +210,21 @@ void displayTextCenter(const char text[], uint8_t textSize, int16_t xOffset, int
   centerCursorWithText(xOffset, yOffset, textWidth, textHeight);
   display.print(text);
 }
+
+
+void displayText(String text, uint8_t textSize, int16_t xPosition, int16_t yPosition) {
+  int16_t x;
+  int16_t y;
+  uint16_t textWidth;
+  uint16_t textHeight;
+
+  display.setTextSize(textSize);
+  display.setTextColor(WHITE, BLACK);
+  display.getTextBounds(text, 0, 0, &x, &y, &textWidth, &textHeight);
+  display.setCursor(xPosition, yPosition - textHeight);
+  display.print(text);
+}
+
 
 void centerCursorWithText(int16_t xOffset, int16_t yOffset, uint16_t textWidth, uint16_t textHeight) {
   display.setCursor(display.width() / 2 - textWidth / 2 + xOffset, display.height() / 2 - textHeight / 2 + yOffset);
