@@ -246,7 +246,6 @@ void setup(){
   display.clearDisplay();
 }
 
-
 // menu;
 void loop(){
   updateButtonStates();
@@ -263,6 +262,7 @@ void loop(){
         // Code for game 1
         break;
     case 2:
+        displayMash();
         // Code for game 2
         break;
     case 3:
@@ -328,6 +328,7 @@ void displayMatch() {
     delay(200);
   
     playBongoCatSequence();
+    previousBongoIndex = 0;
     currentMatchIndex = 0;
   }
   
@@ -367,10 +368,46 @@ void displayMatch() {
   previousBongoIndex = currentBongoIndex;
 }
 
+int mashAmount = 0;
+int mashInitial = 100;
+
+void displayMash() {
+  if (!hasShownIntro) {
+    displayIntro("MASH");
+    previousBongoIndex = 0;
+    currentMatchIndex = 0;
+  }
+
+  display.clearDisplay();
+  int currentBongoIndex = getCurrentBongoInputIndex();
+  playBongoTone(currentBongoIndex);
+  display.drawBitmap(32, 5, bongoCat_allArray[currentBongoIndex + 4], 62, 34, WHITE);
+
+  boolean isCurrentNotSame = previousBongoIndex != currentBongoIndex;
+  boolean isCurrentNotNeutral = currentBongoIndex != 0;
+
+  if (isCurrentNotSame && isCurrentNotNeutral) {
+    mashAmount++;
+  }
+  displayTextCenter(String(mashInitial - mashAmount), 1, 0, 20);
+  display.display();
+
+  if (mashInitial - mashAmount == 0) {
+    switchGame(true);
+  }
+
+  previousBongoIndex = currentBongoIndex;
+
+
+}
+
+
+
+
+
 boolean correctBongoInputChecker(int inputIndex) {
   return matchArray[currentMatchIndex] == inputIndex;
 }
-
 
 void switchGame(boolean didWin) {
 
@@ -463,7 +500,7 @@ void displayIntro(String verb) {
 }
 
 int getRandomGame() {
-  return 1;
+  return 2;
 }
 
 void updateButtonStates() {
