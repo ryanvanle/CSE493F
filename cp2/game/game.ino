@@ -362,29 +362,33 @@ boolean DEBUG_FLAG = true;
 
 void testStuff() {
   display.clearDisplay();
-
-  if (!isTimerRunning) {
-    setAndStartTimer(5); 
-    displayTextCenter("set timer", 1, 0 , 0);
-    display.display();
-    return;
-  }
-
-
-  if (checkTimerElasped()) {
-    displayTextCenter("Timer done", 2, 0, 0);
-    clearTimer();
-    delay(1000);
-  } else {
-    displayTextCenter(String(remainingTimerTimeMS()), 2, 0, -10);
-    displayTextCenter(String(remainingTimerTimeSeconds()), 2, 0, 10);
-  }
-
+  displayTimer();
   display.display();
+
+
+  // if (!isTimerRunning) {
+  //   setAndStartTimer(5); 
+  //   displayTextCenter("set timer", 1, 0 , 0);
+  //   display.display();
+  //   return;
+  // }
+
+
+  // if (checkTimerElasped()) {
+  //   displayTextCenter("Timer done", 2, 0, 0);
+  //   clearTimer();
+  //   delay(1000);
+  // } else {
+  //   displayTextCenter(String(remainingTimerTimeMS()), 2, 0, -10);
+  //   displayTextCenter(String(remainingTimerTimeSeconds()), 2, 0, 10);
+  // }
+
+  // display.display();
 
   
 
 }
+
 
 void loop(){
 
@@ -695,7 +699,10 @@ void displayScore() {
 
 void displayTimer() {
 
+  display.drawCircle(10, 54, 5, WHITE);
   
+
+
   return;
 }
 
