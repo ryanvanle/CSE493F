@@ -192,6 +192,76 @@ const unsigned char* bongoCat_allArray[8] = {
   bongoCat_both2
 };
 
+// i am running out of space apparently LOL 
+
+// // AI GENERATED WORDS
+// const String positiveWords[] =  {
+//   "Great!",
+//   "Bravo!",
+//   "Well done!",
+//   "Excellent!",
+//   "Outstanding!",
+//   "Kudos!",
+//   "Awesome!",
+//   "Superb!",
+//   "Terrific!",
+//   "Fantastic!",
+//   "Great work!",
+//   "Splendid!",
+//   "Wonderful!",
+//   "Impressive!",
+//   "Fabulous!",
+//   "Stellar!",
+//   "Amazing!",
+//   "Bravo!",
+//   "Super!",
+// };
+
+// // AI GENERATED WORDS
+// const String niceTryWords[]  = {
+//   "Nice Try!",
+//   "Almost!",
+//   "Good hustle!",
+//   "Close one!",
+//   "A for effort!",
+//   "Nice shot!",
+//   "Not quite",
+//   "Good effort!",
+//   "Almost had it!",
+//   "So close!",
+//   "Good attempt!",
+//   "Almost nailed it!",
+//   "Nice one, almost!",
+//   "Almost perfect!",
+//   "Good job, nearly!",
+//   "Almost there, keep going!",
+//   "Close call, nice effort!",
+//   "Nearly perfect!",
+// };
+
+// AI GENERATED WORDS
+const String positiveWords[] =  {
+  "Great!",
+  "Bravo!",
+  "Well done!",
+  "Excellent!",
+  "Kudos!",
+  "Awesome!",
+  "Superb!",
+  "Terrific!",
+};
+
+// AI GENERATED WORDS
+const String niceTryWords[]  = {
+  "Nice Try!",
+  "Almost!",
+  "Good Effort!",
+  "Close!",
+  "So Close!",
+  "Not Quite!",
+  "Good Try!",
+};
+
 int bongoTones[] = {0, 220, 261, 523};
 
 // buttons
@@ -216,19 +286,13 @@ enum menuButton {
   length,
 };
 
-
-int currentMatchIndex = 0;
-int matchSequence = 10;
-int matchArrayLength = 20;
-int matchArray[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
 boolean hasShownIntro = false;
 menuButton currentState = play;
 boolean hasNotMenuMoverPressedRecently = true;
 
 // game state
 
-int currentScore = 1;
+int currentScore = 0;
 int currentLives = 1;
 int currentGame = -1;
 
@@ -237,12 +301,11 @@ int GAME_AMOUNT = 2;
 int i = 0;
 
 void setup(){
+  randomSeed(analogRead(A0)); // need to change later
   Serial.begin(9600);
   delay(2000);
 
-  pinMode(LEFT_BUTTON_PIN, INPUT);
-  pinMode(RIGHT_BUTTON_PIN, INPUT);
-  pinMode(OUTPUT_PIEZO_PIN, OUTPUT);
+  Serial.println("running " + String(random(1, 10000)));
 
   // Initialize the display. If it fails, print failure to Serial
   // and enter an infinite loop
@@ -251,52 +314,68 @@ void setup(){
     for (;;); // Don't proceed, loop forever
   }
 
-  // display.clearDisplay();
 
+  pinMode(LEFT_BUTTON_PIN, INPUT);
+  pinMode(RIGHT_BUTTON_PIN, INPUT);
+  pinMode(OUTPUT_PIEZO_PIN, OUTPUT);
+
+
+  display.clearDisplay();
 }
 
-// menu;
-void loop(){
+void runGame() {
   updateButtonStates();
+  switch (currentGame) {
+    case -2:
+        displayEndgame();
+        break;
+    case 1:
+        displayMatch();
+        // Code for game 1
+        break;
+    case 2:
+        displayMash();
+        // Code for game 2
+        break;
+    case 3:
+        // Code for game 3
+        break;
+    case 4:
+        // Code for game 4
+        break;
+    case 5:
+        // Code for game 5
+        break;
+    default:
+        displayMenu();
+        // Code for default case
+        break;
+  }
+}
 
-  displayIntro("test");
+boolean DEBUG_FLAG = true;
 
-  currentScore += 1;
-  delay(10);
-  // Serial.println(getButtonValue(LEFT_BUTTON_PIN));
-
-  // Serial.println(getButtonValue(RIGHT_BUTTON_PIN));
-
-  // int value = analogRead(A2);
-  // Serial.println(value);
-
-  // displayIntro("TEST");
-
-  // switch (currentGame) {
-  //   case 1:
-  //       displayMatch();
-  //       // Code for game 1
-  //       break;
-  //   case 2:
-  //       displayMash();
-  //       // Code for game 2
-  //       break;
-  //   case 3:
-  //       // Code for game 3
-  //       break;
-  //   case 4:
-  //       // Code for game 4
-  //       break;
-  //   case 5:
-  //       // Code for game 5
-  //       break;
-  //   default:
-  //       displayMenu();
-  //       // Code for default case
-  //       break;
-  // }
+void testStuff() {
+  // displayTest();
+  // delay(1000);
+  
+  displayRoundEnd(true);
+  delay(1000);
 
 }
+
+void loop(){
+
+  if (DEBUG_FLAG) {
+    testStuff();
+    return;
+  }
+
+  runGame();
+}
+
+
+
 
 int getButtonValue(int PIN_NUMBER) {
   
@@ -329,7 +408,12 @@ void displayTest() {
   display.display();
 }
 
+
 int previousBongoIndex = 0;
+int currentMatchIndex = 0;
+int matchSequence = 10;
+int matchArrayLength = 20;
+int matchArray[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void displayMatch() {
   if (!hasShownIntro) {
@@ -343,22 +427,28 @@ void displayMatch() {
     display.display();
     
     delay(200);
+
+    matchSequence = random(3, 6);
   
     playBongoCatSequence();
     previousBongoIndex = 0;
     currentMatchIndex = 0;
+    return;
   }
-  
+
   display.clearDisplay();
 
   displayBongoCats();
+  displayUI();
   
   int currentBongoIndex = getCurrentBongoInputIndex();
 
   boolean isPreviousNeutral = previousBongoIndex == 0;
   boolean isCurrentNotNeutral = currentBongoIndex != 0;
+  boolean isDifferent = previousBongoIndex != currentBongoIndex;
 
-  if (isPreviousNeutral && isCurrentNotNeutral) {
+
+  if ((isPreviousNeutral || isDifferent) && isCurrentNotNeutral) {
     
     boolean isCorrect = correctBongoInputChecker(currentBongoIndex);
 
@@ -385,17 +475,26 @@ void displayMatch() {
   previousBongoIndex = currentBongoIndex;
 }
 
-int mashAmount = 0;
-int mashInitial = 100;
+int mashAmount;
+int mashInitial;
 
 void displayMash() {
+
   if (!hasShownIntro) {
+    updateButtonStates();
     displayIntro("MASH");
+    mashAmount = 0;
+    mashInitial = random(50, 81);
     previousBongoIndex = 0;
     currentMatchIndex = 0;
+    return;
   }
 
+  updateButtonStates();
+  
   display.clearDisplay();
+  displayUI();
+
   int currentBongoIndex = getCurrentBongoInputIndex();
   playBongoTone(currentBongoIndex);
   display.drawBitmap(32, 5, bongoCat_allArray[currentBongoIndex + 4], 62, 34, WHITE);
@@ -415,8 +514,6 @@ void displayMash() {
   }
 
   previousBongoIndex = currentBongoIndex;
-
-
 }
 
 boolean correctBongoInputChecker(int inputIndex) {
@@ -424,7 +521,6 @@ boolean correctBongoInputChecker(int inputIndex) {
 }
 
 void switchGame(boolean didWin) {
-
   currentGame = getRandomGame();
   hasShownIntro = false;
 
@@ -434,18 +530,26 @@ void switchGame(boolean didWin) {
     currentLives--;
   }
 
-  if (currentLives <= 0) {
-    endGame();
-  }
+  boolean isDivisable = currentScore % 5 == 0;
+  boolean hasMaxHearts = currentLives > 5;
+  boolean canGetExtraLife = isDivisable && hasMaxHearts;
+  
+  if (canGetExtraLife) currentLives++;
+  if (currentLives <= 0) startEndgame();
+}
 
+void startEndgame() {
+  currentGame = -2;
+}
 
+void displayEndgame() {
+  display.clearDisplay();
+  displayTextCenter("GAME OVER!", 2, 0, -5);
+  displayTextCenter("final score: " + String(currentScore), 1, 0, 10);
+  display.display();
 }
 
 
-
-void endGame() {
-
-}
 
 void generateSequence() {
   for (int i = 0; i < matchSequence; i++) {
@@ -466,6 +570,8 @@ void playBongoCatSequence() {
 
     display.clearDisplay();
     display.drawBitmap(3, 15, bongoCat_neither1, 62, 34, WHITE);
+    displayUI();
+
 
     switch (matchArray[i]) {
       case 1:
@@ -580,19 +686,27 @@ void displayUI() {
   displayTimer();
 }
 
+void displayRoundEnd(boolean didWin) {
+
+  display.clearDisplay();
+  String randomSaying = didWin ? getRandomPositiveWord() : getRandomNiceTryWord();
+  
+  boolean isStringTooLong = randomSaying.length() > 12;
+  int textSize = isStringTooLong ? 1 : 2;
+
+  displayTextCenter(randomSaying, textSize, 0, 0); 
+  display.display();
+
+}
+
+
 
 void playWinTone() {
 
 }
 
-
 void playLoseTone() {
 
-}
-
-
-int getRandomGame() {
-  return (int) random(1, GAME_AMOUNT + 1);
 }
 
 void updateButtonStates() {
@@ -670,7 +784,6 @@ void displayTextCenter(String text, uint8_t textSize, int16_t xOffset, int16_t y
   display.print(text);
 }
 
-
 void displayText(String text, uint8_t textSize, int16_t xPosition, int16_t yPosition) {
   int16_t x;
   int16_t y;
@@ -684,13 +797,23 @@ void displayText(String text, uint8_t textSize, int16_t xPosition, int16_t yPosi
   display.print(text);
 }
 
-
-
 void centerCursorWithText(int16_t xOffset, int16_t yOffset, uint16_t textWidth, uint16_t textHeight) {
   display.setCursor(display.width() / 2 - textWidth / 2 + xOffset, display.height() / 2 - textHeight / 2 + yOffset);
 }
 
+String getRandomPositiveWord() {
+  int index = random(sizeof(positiveWords) / sizeof(positiveWords[0])); // this is AI generated so idk if it works lol
+  return positiveWords[index];
+}
 
+String getRandomNiceTryWord() {
+  int index = random(sizeof(niceTryWords) / sizeof(niceTryWords[0])); // this is AI generated
+  return niceTryWords[index];
+}
+
+int getRandomGame() {
+  return (int) random(1, GAME_AMOUNT + 1);
+}
 
 
 
