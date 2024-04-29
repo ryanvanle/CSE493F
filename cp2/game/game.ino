@@ -195,8 +195,8 @@ const unsigned char* bongoCat_allArray[8] = {
 int bongoTones[] = {0, 220, 261, 523};
 
 // buttons
-int RIGHT_BUTTON_PIN = 13;
-int LEFT_BUTTON_PIN = 8;
+int RIGHT_BUTTON_PIN = 5;
+int LEFT_BUTTON_PIN = 6;
 int buttonPins[] = {LEFT_BUTTON_PIN, RIGHT_BUTTON_PIN}; 
 int buttonAmount = *(&buttonPins + 1) - buttonPins;
 
@@ -207,7 +207,7 @@ unsigned long buttonStateChangeTimestamps[] = {0, 0};
 const int DEBOUNCE_WINDOW = 0; // in milliseconds
 
 // buzzer
-int OUTPUT_PIEZO_PIN = 12;
+int OUTPUT_PIEZO_PIN = 13;
 
 // menu
 enum menuButton {
@@ -215,6 +215,7 @@ enum menuButton {
   score,
   length,
 };
+
 
 int currentMatchIndex = 0;
 int matchSequence = 10;
@@ -224,16 +225,23 @@ int matchArray[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 boolean hasShownIntro = false;
 menuButton currentState = play;
 boolean hasNotMenuMoverPressedRecently = true;
+
+// game state
+
+int currentScore = 1;
+int currentLives = 1;
 int currentGame = -1;
 
 int INTRO_TIME_DELAY = 1000;
+int GAME_AMOUNT = 2;
+int i = 0;
 
 void setup(){
   Serial.begin(9600);
+  delay(2000);
 
   pinMode(LEFT_BUTTON_PIN, INPUT);
   pinMode(RIGHT_BUTTON_PIN, INPUT);
-
   pinMode(OUTPUT_PIEZO_PIN, OUTPUT);
 
   // Initialize the display. If it fails, print failure to Serial
@@ -243,42 +251,50 @@ void setup(){
     for (;;); // Don't proceed, loop forever
   }
 
-  display.clearDisplay();
+  // display.clearDisplay();
+
 }
 
 // menu;
 void loop(){
   updateButtonStates();
+
+  displayIntro("test");
+
+  currentScore += 1;
+  delay(10);
   // Serial.println(getButtonValue(LEFT_BUTTON_PIN));
 
   // Serial.println(getButtonValue(RIGHT_BUTTON_PIN));
 
-  switch (currentGame) {
-    case 0:
-        // Code for game 0
-        break; 
-    case 1:
-        displayMatch();
-        // Code for game 1
-        break;
-    case 2:
-        displayMash();
-        // Code for game 2
-        break;
-    case 3:
-        // Code for game 3
-        break;
-    case 4:
-        // Code for game 4
-        break;
-    case 5:
-        // Code for game 5
-        break;
-    default:
-        displayMenu();
-        // Code for default case
-        break;
-  }
+  // int value = analogRead(A2);
+  // Serial.println(value);
+
+  // displayIntro("TEST");
+
+  // switch (currentGame) {
+  //   case 1:
+  //       displayMatch();
+  //       // Code for game 1
+  //       break;
+  //   case 2:
+  //       displayMash();
+  //       // Code for game 2
+  //       break;
+  //   case 3:
+  //       // Code for game 3
+  //       break;
+  //   case 4:
+  //       // Code for game 4
+  //       break;
+  //   case 5:
+  //       // Code for game 5
+  //       break;
+  //   default:
+  //       displayMenu();
+  //       // Code for default case
+  //       break;
+  // }
 
 }
 
@@ -300,8 +316,8 @@ void displayMenu() {
     return;
   }
 
-  String title = "TITLE";
-  displayTextCenter(title, 3, 0, -16);
+  String gameTitle = "VERBS";
+  displayTextCenter(gameTitle, 3, 0, -16);
   displayMenuButtons();
   display.display();
 }
@@ -321,6 +337,7 @@ void displayMatch() {
     displayIntro("MATCH");
     
     display.clearDisplay();
+    displayUI();
     display.drawBitmap(3, 15, bongoCat_neither1, 62, 34, WHITE);
     display.drawBitmap(64, 15, bongoCat_neither2, 62, 34, WHITE);
     display.display();
@@ -389,6 +406,7 @@ void displayMash() {
   if (isCurrentNotSame && isCurrentNotNeutral) {
     mashAmount++;
   }
+
   displayTextCenter(String(mashInitial - mashAmount), 1, 0, 20);
   display.display();
 
@@ -401,15 +419,31 @@ void displayMash() {
 
 }
 
-
-
-
-
 boolean correctBongoInputChecker(int inputIndex) {
   return matchArray[currentMatchIndex] == inputIndex;
 }
 
 void switchGame(boolean didWin) {
+
+  currentGame = getRandomGame();
+  hasShownIntro = false;
+
+  if (didWin) {
+    currentScore++;
+  } else {
+    currentLives--;
+  }
+
+  if (currentLives <= 0) {
+    endGame();
+  }
+
+
+}
+
+
+
+void endGame() {
 
 }
 
@@ -423,6 +457,7 @@ void generateSequence() {
 void playBongoCatSequence() {
   for (int i = 0; i < matchSequence; i++) {
     display.clearDisplay();
+    displayUI();
     display.drawBitmap(3, 15, bongoCat_neither1, 62, 34, WHITE);
     display.drawBitmap(64, 15, bongoCat_neither2, 62, 34, WHITE);
     display.display();
@@ -492,15 +527,72 @@ void playBongoTone(int index) {
 
 void displayIntro(String verb) {
     display.clearDisplay();
-    displayTextCenter(verb, 3, 0, 0);
+    displayTextCenter(verb, 3, 0, -5);
+    displayHearts();
+    displayScore();
+
     display.display();
     hasShownIntro = true;
     delay(INTRO_TIME_DELAY);
     display.clearDisplay();
 }
 
+void displayInputIcon(boolean isIntro) {
+  return;
+}
+
+
+void displayHearts() {
+  display.setCursor(0, 1);
+  display.setTextSize(1);
+
+  int heartIndex = 3;
+
+  for (int i = 0; i < currentLives; i++) {
+    display.write(heartIndex);
+  }
+}
+
+void displayScore() {
+  int xOffset;
+
+  if (currentScore < 10) {
+    xOffset = 120;
+  } else if (currentScore < 100) {
+    xOffset = 115;
+  } else if (currentScore < 1000) {
+    xOffset = 110;
+  } else {
+    xOffset = 103;
+  }
+
+  displayText(String(currentScore), 1, xOffset, 10);
+}
+
+void displayTimer() {
+  return;
+}
+
+void displayUI() {
+  displayHearts();
+  displayScore();
+  displayInputIcon(false);
+  displayTimer();
+}
+
+
+void playWinTone() {
+
+}
+
+
+void playLoseTone() {
+
+}
+
+
 int getRandomGame() {
-  return 2;
+  return (int) random(1, GAME_AMOUNT + 1);
 }
 
 void updateButtonStates() {
@@ -591,6 +683,7 @@ void displayText(String text, uint8_t textSize, int16_t xPosition, int16_t yPosi
   display.setCursor(xPosition, yPosition - textHeight);
   display.print(text);
 }
+
 
 
 void centerCursorWithText(int16_t xOffset, int16_t yOffset, uint16_t textWidth, uint16_t textHeight) {
