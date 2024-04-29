@@ -255,7 +255,7 @@ const String positiveWords[] =  {
 const String niceTryWords[]  = {
   "Nice Try!",
   "Almost!",
-  "Good Effort!",
+  "Next Time!",
   "Close!",
   "So Close!",
   "Not Quite!",
@@ -286,7 +286,6 @@ enum menuButton {
   length,
 };
 
-boolean hasShownIntro = false;
 menuButton currentState = play;
 boolean hasNotMenuMoverPressedRecently = true;
 
@@ -299,6 +298,12 @@ int currentGame = -1;
 int INTRO_TIME_DELAY = 1000;
 int GAME_AMOUNT = 2;
 int i = 0;
+boolean hasShownIntro = false;
+
+// timer
+unsigned long startTime = 0;
+unsigned long duration = 0;
+boolean isTimerRunning = false;
 
 void setup(){
   randomSeed(analogRead(A0)); // need to change later
@@ -356,11 +361,28 @@ void runGame() {
 boolean DEBUG_FLAG = true;
 
 void testStuff() {
-  // displayTest();
-  // delay(1000);
+  display.clearDisplay();
+
+  if (!isTimerRunning) {
+    setAndStartTimer(5); 
+    displayTextCenter("set timer", 1, 0 , 0);
+    display.display();
+    return;
+  }
+
+
+  if (checkTimerElasped()) {
+    displayTextCenter("Timer done", 2, 0, 0);
+    clearTimer();
+    delay(1000);
+  } else {
+    displayTextCenter(String(remainingTimerTimeMS()), 2, 0, -10);
+    displayTextCenter(String(remainingTimerTimeSeconds()), 2, 0, 10);
+  }
+
+  display.display();
+
   
-  displayRoundEnd(true);
-  delay(1000);
 
 }
 
@@ -373,8 +395,6 @@ void loop(){
 
   runGame();
 }
-
-
 
 
 int getButtonValue(int PIN_NUMBER) {
@@ -814,6 +834,59 @@ String getRandomNiceTryWord() {
 int getRandomGame() {
   return (int) random(1, GAME_AMOUNT + 1);
 }
+
+// TIMER CODE IS AI GENERATED from chatgpt-3.5 but also edited by me to fit better so the initial code is AI
+
+boolean setTimer(int seconds) {  
+  if (isTimerRunning) return false;
+
+  duration = ((unsigned long) seconds) * 1000; // Convert seconds to milliseconds
+  return true;
+}
+
+boolean setAndStartTimer(int seconds) {
+  return setTimer(seconds) && startTimer();
+}
+
+boolean startTimer() {
+  if (isTimerRunning) return false;
+
+  startTime = millis();
+  isTimerRunning = true;
+  
+  return isTimerRunning;
+}
+
+boolean clearTimer() {
+  if (!isTimerRunning) return false;
+
+  startTime = 0;
+  duration = 0;
+  isTimerRunning = false;
+
+  return true;
+}
+
+boolean checkTimerElasped() {
+  boolean hasElaspedTime = millis() - startTime >= duration;
+  return hasElaspedTime;
+}
+
+long remainingTimerTimeMS() {
+  if (checkTimerElasped()) return 0;
+  return duration - (millis() - startTime);
+}
+
+int remainingTimerTimeSeconds() {
+  if (checkTimerElasped()) return 0;
+  return (int) ((duration - (millis() - startTime)) / 1000);
+}
+
+
+
+
+
+
 
 
 
