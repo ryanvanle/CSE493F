@@ -570,7 +570,6 @@ void displayEndgame() {
 }
 
 
-
 void generateSequence() {
   for (int i = 0; i < matchSequence; i++) {
     matchArray[i] = random(1, 4);
@@ -667,7 +666,6 @@ void displayInputIcon(boolean isIntro) {
   return;
 }
 
-
 void displayHearts() {
   display.setCursor(0, 1);
   display.setTextSize(1);
@@ -696,6 +694,8 @@ void displayScore() {
 }
 
 void displayTimer() {
+
+  
   return;
 }
 
@@ -718,8 +718,6 @@ void displayRoundEnd(boolean didWin) {
   display.display();
 
 }
-
-
 
 void playWinTone() {
 
@@ -787,7 +785,6 @@ void drawUnderline(String text, int xPosition, int yPosition) {
 
   int offset = 2;
   display.drawFastHLine(xPosition - 1, yPosition + offset, textWidth, WHITE);
-
 
 }
 
