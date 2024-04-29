@@ -310,12 +310,15 @@ void setup(){
   Serial.begin(9600);
   delay(2000);
 
-  Serial.println("running " + String(random(1, 10000)));
+  // Serial.println("running " + String(random(1, 10000)));
 
   // Initialize the display. If it fails, print failure to Serial
   // and enter an infinite loop
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
+    Serial.println(F("FAILED"));
     Serial.println(F("SSD1306 allocation failed"));
+    Serial.println(F("FAILED"));
+
     for (;;); // Don't proceed, loop forever
   }
 
@@ -361,29 +364,29 @@ void runGame() {
 boolean DEBUG_FLAG = true;
 
 void testStuff() {
-  display.clearDisplay();
-  displayTimer();
-  display.display();
-
-
-  // if (!isTimerRunning) {
-  //   setAndStartTimer(5); 
-  //   displayTextCenter("set timer", 1, 0 , 0);
-  //   display.display();
-  //   return;
-  // }
-
-
-  // if (checkTimerElasped()) {
-  //   displayTextCenter("Timer done", 2, 0, 0);
-  //   clearTimer();
-  //   delay(1000);
-  // } else {
-  //   displayTextCenter(String(remainingTimerTimeMS()), 2, 0, -10);
-  //   displayTextCenter(String(remainingTimerTimeSeconds()), 2, 0, 10);
-  // }
-
+  // display.clearDisplay();
+  // displayTimer();
   // display.display();
+
+
+  if (!isTimerRunning) {
+    setAndStartTimer(5); 
+    displayTextCenter("set timer", 1, 0 , 0);
+    display.display();
+    return;
+  }
+
+
+  if (checkTimerElasped()) {
+    displayTextCenter("Timer done", 2, 0, 0);
+    clearTimer();
+    delay(1000);
+  } else {
+    displayTextCenter(String(remainingTimerTimeMS()), 2, 0, -10);
+    displayTextCenter(String(remainingTimerTimeSeconds()), 2, 0, 10);
+  }
+
+  display.display();
 
   
 
@@ -399,7 +402,6 @@ void loop(){
 
   runGame();
 }
-
 
 int getButtonValue(int PIN_NUMBER) {
   
