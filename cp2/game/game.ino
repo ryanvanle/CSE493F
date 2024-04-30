@@ -402,7 +402,7 @@ void setup(){
 boolean DEBUG_FLAG = false;
 
 boolean GAME_DEBUG_FLAG = true;
-int DEBUG_GAME_NUMBER = 3; 
+int DEBUG_GAME_NUMBER = 4; 
 
 
 void runGame() {
@@ -599,11 +599,16 @@ String targetNote = "targetValue";
 void displayTune() {
   if (!hasShownIntro) {
     clearTimer();  
-    displayIntro("GAME NAME");
+    displayIntro("TUNE");
 
     // intro put here
+    display.clearDisplay();
 
+    displayTextCenter("Target", 1, 0, -5);
+    displayTextCenter(targetNote, 1, 0, 5);
 
+    display.display();
+    delay(1000);
     setAndStartTimer(10);
     return;
   }
@@ -613,20 +618,20 @@ void displayTune() {
 
   // game logic here
 
-  int potValue = analogRead(POT_PIN);
-  long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0], dMajorFrequency[11]);
-  String currentNote = getCurrentNote(currentFrequency);
-
-  boolean isSameNote = currentNote.equals(targetNote);
-
-
-  displayTextCenter("Your note", 1, -5, -10);
-  displayTextCenter(currentNote, 1, -5, 0);
-
-  displayTextCenter("Target", 1, 5, -10);
-  displayTextCenter(targetNote, 1, 5, 0);
+  
+  // int potValue = analogRead(POT_PIN);
+  // long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0], dMajorFrequency[11]);
+  // String currentNote = getCurrentNote(currentFrequency);
 
 
+  // boolean isSameNote = currentNote.equals(targetNote);
+
+
+  displayTextCenter("Current", 1, -30, -10);
+  displayTextCenter(currentNote, 1, -30, 5);
+
+  displayTextCenter("Target", 1, 30, -10);
+  displayTextCenter(dMajorNotes[1], 1, 30, 5);
 
 
 
@@ -647,9 +652,9 @@ String getCurrentNote(long comparedFrequency) {
   String smallestNote = "base case";
 
   // // i could do binary search on this but im not lol
-  for (int i = 0; i < dMajorArrayLength; i++) {
+  for (int i = 0; i < 13; i++) {
     long currentFrequency = dMajorFrequency[i];
-    long currentDifference = currentFrequency - comparedFrequency;
+    long currentDifference = 1000 + currentFrequency - comparedFrequency;
 
     if (currentDifference < smallestDifference && currentDifference >= 0) {
       smallestDifference = currentDifference;
@@ -1386,7 +1391,6 @@ int remainingTimerTimeSeconds() {
   if (checkTimerElasped()) return 0;
   return (int) ((duration - (millis() - startTime)) / 1000);
 }
-
 
 
 
