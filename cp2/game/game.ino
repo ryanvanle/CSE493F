@@ -365,19 +365,29 @@ void runGame() {
 boolean DEBUG_FLAG = true;
 
 void testStuff() {
-  if (!isTimerRunning) {
-    setAndStartTimer(8);
-  }
+
+  // display.clearDisplay();
+  // displayTest();
+  // display.display();
+
   
-  display.clearDisplay();
-  displayText(String(remainingTimerTimeSeconds()), 1, 20, 20);
-  displayUI();
-  display.display();
+  playTimerTransition(0, 0);
+  displayRoundEnd(false);
+  delay(1000);
+
+  // if (!isTimerRunning) {
+  //   setAndStartTimer(8);
+  // }
+  
+  // display.clearDisplay();
+  // displayText(String(remainingTimerTimeSeconds()), 1, 20, 20);
+  // displayUI();
+  // display.display();
 
 
-  if (checkTimerElasped()) {
-    clearTimer();
-  }
+  // if (checkTimerElasped()) {
+  //   clearTimer();
+  // }
   // if (!isTimerRunning) {
   //   setAndStartTimer(5); 
   //   displayTextCenter("set timer", 1, 0 , 0);
@@ -763,7 +773,6 @@ void drawTimerTrailEffect(int xPos, int yPos) {
   int radius = 4;
 
 
-
   for (int i = 0; i < triangleAmount; i++) {
     int x0 = xPos + random(-radius, radius);
     int y0 = yPos + random(-radius, radius);
@@ -783,10 +792,12 @@ void drawTimerTrailEffect(int xPos, int yPos) {
 
 void playTimerTransition(int xPos, int yPos) {
   // from the adafruit examples 
-  for(int16_t i = 0; i < display.width(); i += 3) {
+  for(int16_t i = 0; i < display.width(); i += 2) {
     display.drawCircle(xPos, yPos, i, SSD1306_WHITE);
     display.display();
   }
+
+  // delay(500);
 
 }
 
@@ -805,9 +816,11 @@ void displayRoundEnd(boolean didWin) {
   boolean isStringTooLong = randomSaying.length() > 12;
   int textSize = isStringTooLong ? 1 : 2;
 
+
+  if (!didWin) display.invertDisplay(true);
   displayTextCenter(randomSaying, textSize, 0, 0); 
   display.display();
-
+  // delay(250);
 }
 
 void playWinTone() {
