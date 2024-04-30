@@ -1032,10 +1032,9 @@ void startEndgame() {
 
 void displayEndgame() {
   display.clearDisplay();
-  displayHeartsLights();
-  displayTextCenter("GAME OVER!", 2, 0, -10);
-  displayTextCenter("Final Score: " + String(currentScore), 1, 0, 5);
-  displayTextCenter("Press to Back!", 1, 0, 15);
+  displayTextCenter("GAME OVER!", 2, 0, -5);
+  displayTextCenter("final score: " + String(currentScore), 1, 0, 10);
+  displayTextCenter("press any button to go back", 1, 0, 16);
   display.display();
 
   delay(400);
@@ -1071,7 +1070,6 @@ void playBongoCatSequence() {
     display.clearDisplay();
     display.drawBitmap(3, 15, bongoCat_neither1, 62, 34, WHITE);
     displayUI();
-
 
 
     switch (matchArray[i]) {
@@ -1221,7 +1219,7 @@ void displayTimer() {
       display.drawFastVLine(xPos, yPos - radius - upLineLength, upLineLength - 1, WHITE);
       drawTimerTrailEffect(xPos, yPos - radius - upLineLength - 1);
 
-    } else if (isTimerRunning){
+    } else if (isTimerRunning) {
       playTimerTransition(xPos, yPos);
     }
 }
