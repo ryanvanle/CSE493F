@@ -20,6 +20,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define LIGHT_PIN A1
 #define SLIDER_PIN A2
 
+#define VIBE_PIN 12
+
 
 // bitmaps
 
@@ -362,7 +364,7 @@ int currentLives = 3;
 int currentGame = -1;
 
 int INTRO_TIME_DELAY = 1000;
-int GAME_AMOUNT = 3;
+int GAME_AMOUNT = 4;
 int i = 0;
 boolean hasShownIntro = false;
 
@@ -372,7 +374,7 @@ unsigned long duration = 0;
 boolean isTimerRunning = false;
 
 void setup(){
-  randomSeed(analogRead(A5));
+  randomSeed(analogRead(A1));
   Serial.begin(9600);
   delay(2000);
 
@@ -394,7 +396,10 @@ void setup(){
   pinMode(LEFT_BUTTON_PIN, INPUT);
   pinMode(RIGHT_BUTTON_PIN, INPUT);
   pinMode(OUTPUT_PIEZO_PIN, OUTPUT);
-
+  pinMode(VIBE_PIN, OUTPUT);
+  pinMode(A3, OUTPUT);
+  pinMode(A4, OUTPUT);
+  pinMode(A5, OUTPUT);
 
   display.clearDisplay();
 }
@@ -402,7 +407,7 @@ void setup(){
 boolean DEBUG_FLAG = false;
 
 boolean GAME_DEBUG_FLAG = true;
-int DEBUG_GAME_NUMBER = 4; 
+int DEBUG_GAME_NUMBER = 1; 
 
 
 void runGame() {
@@ -440,51 +445,29 @@ void runGame() {
 
 
 void testStuff() {
-  // displayInputsDEBUG();
-
 
   // display.clearDisplay();
-  // displayTest();
-  // display.display();
-
+  // int potVal = analogRead(POT_PIN) / 16;
+  // analogWrite(VIBE_PIN, potVal);
   
-  // playTimerTransition(0, 0);
-  // displayRoundEnd(false);
-  // delay(1000);
 
-  // if (!isTimerRunning) {
-  //   setAndStartTimer(8);
-  // }
+  // Serial.print("pot val: ");
+  // Serial.println(potVal);
+
+
+  // currentLives = 2;
+  // displayHeartsLights();
+
+  // // displayTextCenter(String(potVal), 1, 0, 0);
   
-  // display.clearDisplay();
-  // displayText(String(remainingTimerTimeSeconds()), 1, 20, 20);
-  // displayUI();
-  // display.display();
 
-
-  // if (checkTimerElasped()) {
-  //   clearTimer();
-  // }
-  // if (!isTimerRunning) {
-  //   setAndStartTimer(5); 
-  //   displayTextCenter("set timer", 1, 0 , 0);
-  //   display.display();
-  //   return;
-  // }
-
-
-  // if (checkTimerElasped()) {
-  //   displayTextCenter("Timer done", 2, 0, 0);
-  //   clearTimer();
-  //   delay(1000);
-  // } else {
-  //   displayTextCenter(String(remainingTimerTimeMS()), 2, 0, -10);
-  //   displayTextCenter(String(remainingTimerTimeSeconds()), 2, 0, 10);
-  // }
 
   // display.display();
+  
 
 }
+
+
 
 void loop(){
   display.invertDisplay(false);
@@ -496,6 +479,7 @@ void loop(){
 
   runGame();
 }
+
 
 int getButtonValue(int PIN_NUMBER) {
   
@@ -531,8 +515,10 @@ void displayInputsDEBUG() {
 void displayMenu() {
   display.clearDisplay();
   
-  if (getButtonValue(LEFT_BUTTON_PIN) == HIGH && currentState == play) {
+  if (getButtonValue(LEFT_BUTTON_PIN) == HIGH) {
     currentGame = getRandomGame();
+    currentScore = 0;
+    currentLives = 3;
     return;
   }
 
@@ -956,7 +942,7 @@ void displayMatch() {
 
   display.display();
 
-  if (checkTimerElasped()) {
+  if (checkTimerElasped() && isTimerRunning) {
     displayRoundEnd(false);
     switchGame(false);
   }
@@ -1033,7 +1019,7 @@ void switchGame(boolean didWin) {
   }
 
   boolean isDivisable = currentScore % 5 == 0;
-  boolean hasMaxHearts = currentLives > 5;
+  boolean hasMaxHearts = currentLives > 3;
   boolean canGetExtraLife = isDivisable && hasMaxHearts;
   
   if (canGetExtraLife) currentLives++;
@@ -1046,9 +1032,22 @@ void startEndgame() {
 
 void displayEndgame() {
   display.clearDisplay();
-  displayTextCenter("GAME OVER!", 2, 0, -5);
-  displayTextCenter("final score: " + String(currentScore), 1, 0, 10);
+  displayHeartsLights();
+  displayTextCenter("GAME OVER!", 2, 0, -10);
+  displayTextCenter("Final Score: " + String(currentScore), 1, 0, 5);
+  displayTextCenter("Press to Back!", 1, 0, 15);
   display.display();
+
+  delay(400);
+  updateButtonStates();
+
+  if (getButtonValue(6) == HIGH || getButtonValue(5) == HIGH) {
+    currentGame = -1;
+    currentScore = 0;
+    currentLives = 0;
+  }
+
+
 }
 
 
@@ -1072,6 +1071,7 @@ void playBongoCatSequence() {
     display.clearDisplay();
     display.drawBitmap(3, 15, bongoCat_neither1, 62, 34, WHITE);
     displayUI();
+
 
 
     switch (matchArray[i]) {
@@ -1157,6 +1157,8 @@ void displayHearts() {
   for (int i = 0; i < currentLives; i++) {
     display.write(heartIndex);
   }
+
+  displayHeartsLights();
 }
 
 void displayScore() {
@@ -1219,7 +1221,7 @@ void displayTimer() {
       display.drawFastVLine(xPos, yPos - radius - upLineLength, upLineLength - 1, WHITE);
       drawTimerTrailEffect(xPos, yPos - radius - upLineLength - 1);
 
-    } else {
+    } else if (isTimerRunning){
       playTimerTransition(xPos, yPos);
     }
 }
@@ -1315,8 +1317,8 @@ void displayMenuButtons() {
 
   String menuOptions[] = {"play"};
   int menuButtonLength = *(&menuOptions + 1) - menuOptions;
-  int xPositions[] = {3};
-  int yPositions[] = {60};
+  int xPositions[] = {40};
+  int yPositions[] = {55};
 
 
   int textSize = 2;
@@ -1454,6 +1456,27 @@ int remainingTimerTimeSeconds() {
 }
 
 
+
+void displayHeartsLights() {
+
+  if (currentLives == 3) {
+    digitalWrite(A5, HIGH);
+    digitalWrite(A4, HIGH);
+    digitalWrite(A3, HIGH);\
+  } else if (currentLives == 2) {
+    digitalWrite(A5, HIGH);
+    digitalWrite(A4, HIGH);
+    digitalWrite(A3, LOW);
+  } else if (currentLives == 1) {
+    digitalWrite(A5, HIGH);
+    digitalWrite(A4, LOW);
+    digitalWrite(A3, LOW);
+  } else {
+    digitalWrite(A5, LOW);
+    digitalWrite(A4, LOW);
+    digitalWrite(A3, LOW);
+  }
+}
 
 
 
