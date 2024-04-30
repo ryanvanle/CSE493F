@@ -596,6 +596,9 @@ const long highestPotValue = 4095;
 
 String targetNote = "targetValue";
 
+long firstTimeSeen = 0;
+boolean previouslyTheSame;
+
 void displayTune() {
   if (!hasShownIntro) {
     clearTimer();  
@@ -612,6 +615,8 @@ void displayTune() {
     int targetIndex = random(0, 13);
     targetNote = dMajorNotes[targetIndex];
 
+    previouslyTheSame = false;
+
     if (targetNote.equals(currentNote)) {
       targetIndex = random(0, 13);
       targetNote = dMajorNotes[targetIndex];
@@ -619,7 +624,7 @@ void displayTune() {
 
     // int targetFrequencyIndex = getNoteIndex(targetNote);
 
-    // tone(OUTPUT_PIEZO_PIN, dMajorFrequency[targetFrequencyIndex]);
+    // tone(OUTPUT_PIEZO_PIN, dMajorFrequency[targetIndex]);
 
     displayTextCenter("Target", 1, 0, -5);
     displayTextCenter(targetNote, 1, 0, 5);
@@ -642,7 +647,31 @@ void displayTune() {
   tone(OUTPUT_PIEZO_PIN, currentFrequency);
 
 
-  // boolean isSameNote = currentNote.equals(targetNote);
+
+
+  boolean isSameNote = currentNote.equals(targetNote);
+
+  if (isSameNote && !previouslyTheSame) {
+    previouslyTheSame = true;
+    firstTimeSeen = remainingTimerTimeMS();
+  } else if (isSameNote && previouslyTheSame) {
+
+    boolean hasEnoughTimePassed = firstTimeSeen - remainingTimerTimeMS() > 1000;
+
+    if (hasEnoughTimePassed) {
+      displayRoundEnd(true);
+      switchGame(true);
+    }
+
+
+
+  } else {
+    firstTimeSeen = 0;
+    previouslyTheSame = false;
+  }
+
+
+
 
 
   displayTextCenter("Current", 1, -30, -10);
