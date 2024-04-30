@@ -192,7 +192,6 @@ const unsigned char* bongoCat_allArray[8] = {
   bongoCat_both2
 };
 
-// i am running out of space apparently LOL 
 
 // // AI GENERATED WORDS
 // const String positiveWords[] =  {
@@ -310,6 +309,8 @@ void setup(){
   Serial.begin(9600);
   delay(2000);
 
+  Serial.println("running");
+
   // Serial.println("running " + String(random(1, 10000)));
 
   // Initialize the display. If it fails, print failure to Serial
@@ -364,29 +365,37 @@ void runGame() {
 boolean DEBUG_FLAG = true;
 
 void testStuff() {
-  // display.clearDisplay();
-  // displayTimer();
-  // display.display();
-
-
   if (!isTimerRunning) {
-    setAndStartTimer(5); 
-    displayTextCenter("set timer", 1, 0 , 0);
-    display.display();
-    return;
+    setAndStartTimer(8);
   }
+  
+  display.clearDisplay();
+  displayText(String(remainingTimerTimeSeconds()), 1, 20, 20);
+  displayUI();
+  display.display();
 
 
   if (checkTimerElasped()) {
-    displayTextCenter("Timer done", 2, 0, 0);
     clearTimer();
-    delay(1000);
-  } else {
-    displayTextCenter(String(remainingTimerTimeMS()), 2, 0, -10);
-    displayTextCenter(String(remainingTimerTimeSeconds()), 2, 0, 10);
   }
+  // if (!isTimerRunning) {
+  //   setAndStartTimer(5); 
+  //   displayTextCenter("set timer", 1, 0 , 0);
+  //   display.display();
+  //   return;
+  // }
 
-  display.display();
+
+  // if (checkTimerElasped()) {
+  //   displayTextCenter("Timer done", 2, 0, 0);
+  //   clearTimer();
+  //   delay(1000);
+  // } else {
+  //   displayTextCenter(String(remainingTimerTimeMS()), 2, 0, -10);
+  //   displayTextCenter(String(remainingTimerTimeSeconds()), 2, 0, 10);
+  // }
+
+  // display.display();
 
   
 
@@ -701,11 +710,84 @@ void displayScore() {
 
 void displayTimer() {
 
-  display.drawCircle(10, 54, 5, WHITE);
+    int radius = 3;
+    int xPos = 3;
+    int yPos = 59;
+    long timeMS = remainingTimerTimeMS();
+
+    int speed = 80;
+
+    long longLineLength = map(timeMS, 3000, duration, 0, speed);
+    long downLineLength = map(timeMS, 2000, duration, 0, speed);
+    long shortLineLength = map(timeMS, 1000, duration, 0, speed);
+    long upLineLength = map(timeMS, 0, duration, 0, speed );
+
+    Serial.print("long: ");
+    Serial.println(longLineLength);
+
+    if (longLineLength > 0) {
+      display.drawCircle(xPos, yPos, radius, WHITE); // circle
+      display.drawFastVLine(xPos, yPos - radius - 2, 2, WHITE);
+      display.drawFastHLine(xPos, yPos - radius - 2, 6, WHITE);
+      display.drawFastVLine(xPos + 6, yPos - radius - 2, 2 + radius + radius, WHITE);
+
+      display.drawFastHLine(xPos + 6, yPos + radius, longLineLength, WHITE);
+      drawTimerTrailEffect(xPos + 6 + longLineLength, yPos + radius);
+
+    } else if (downLineLength > 0) {
+      display.drawCircle(xPos, yPos, radius, WHITE); // circle
+      display.drawFastVLine(xPos, yPos - radius - 2, 2, WHITE);
+      display.drawFastHLine(xPos, yPos - radius - 2, 6, WHITE);
+      display.drawFastVLine(xPos + 6, yPos - radius - 2, downLineLength, WHITE);
+      drawTimerTrailEffect(xPos + 6, yPos - radius - 2 + downLineLength);
+
+    } else if (shortLineLength > 0) {
+      display.drawCircle(xPos, yPos, radius, WHITE); // circle
+      display.drawFastVLine(xPos, yPos - radius - 2, 2, WHITE);
+      display.drawFastHLine(xPos, yPos - radius - 2, shortLineLength, WHITE);
+      drawTimerTrailEffect(xPos + shortLineLength, yPos - radius - 2);
+
+    } else if (upLineLength > 0) {
+      display.drawCircle(xPos, yPos, radius, WHITE); // circle
+      display.drawFastVLine(xPos, yPos - radius - upLineLength, upLineLength - 1, WHITE);
+      drawTimerTrailEffect(xPos, yPos - radius - upLineLength - 1);
+
+    } else {
+      playTimerTransition(xPos, yPos);
+    }
+}
+
+void drawTimerTrailEffect(int xPos, int yPos) {
   
+  int triangleAmount = 2;
+  int radius = 4;
 
 
-  return;
+
+  for (int i = 0; i < triangleAmount; i++) {
+    int x0 = xPos + random(-radius, radius);
+    int y0 = yPos + random(-radius, radius);
+
+    int x1 = xPos + random(-radius, radius);
+    int y1 = yPos + random(-radius, radius);
+    
+    int x2 = xPos + random(-radius, radius);
+    int y2 = yPos + random(-radius, radius);
+
+    display.drawTriangle(x0, y0, x1, y1, x2, y2, WHITE);    
+  }
+
+
+}
+
+
+void playTimerTransition(int xPos, int yPos) {
+  // from the adafruit examples 
+  for(int16_t i = 0; i < display.width(); i += 3) {
+    display.drawCircle(xPos, yPos, i, SSD1306_WHITE);
+    display.display();
+  }
+
 }
 
 void displayUI() {
