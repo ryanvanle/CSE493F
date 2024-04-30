@@ -588,9 +588,15 @@ void displayGAMENAME() {
 */
 
 
+
+boolean hasCovered = false;
+
 void displayCover() {
   if (!hasShownIntro) {
     clearTimer();
+
+    hasCovered = false;
+
     displayIntro("COVER!");
     setAndStartTimer(5);
     return;
@@ -600,38 +606,49 @@ void displayCover() {
   displayUI();
 
 
-  displayEyes();
+  int darknessLevel = analogRead(LIGHT_PIN);
+  const int DARKNESS_LEVEL_THRESHOLD = 4000;
+
+  Serial.println(darknessLevel);
+
+  boolean isCurrentlyCovered = darknessLevel >= DARKNESS_LEVEL_THRESHOLD;
+
+
+  if (isCurrentlyCovered) {
+    hasCovered = true;
+    display.drawBitmap(39, 6, epd_bitmap_inoseeBig, 50, 50, WHITE); //42x42
+    // clearTimer();
+  } else if (hasCovered && !isCurrentlyCovered) {
+    display.drawBitmap(39, 6, epd_bitmap_inoseeBig, 50, 50, WHITE); //42x42
+    delay(1000);
+    displayRoundEnd(true);
+    switchGame(true);
+  } else {
+    display.drawBitmap(35, 6, epd_bitmap_iseeBig, 59, 51, WHITE); //42x42
+ 
+  }
+
+
+
+  // if (remainingTimerTimeSeconds() < 3) {
+  //   display.drawBitmap(39, 6, epd_bitmap_inoseeBig, 50, 50, WHITE); //42x42
+  // } else {
+  //   display.drawBitmap(35, 6, epd_bitmap_iseeBig, 59, 51, WHITE); //42x42
+  // }
+
+  // // displayEyes();
 
 
 
   display.display();
 
 
- if (checkTimerElasped()) {
+ if (checkTimerElasped() && isTimerRunning) {
     displayRoundEnd(false);
     switchGame(false);
   }
 
   
-}
-
-void displayEyes() {
-
-
-
-  // display.drawBitmap(30, 15, epd_bitmap_isee, 47, 40, WHITE); //47x40
-  // display.drawBitmap(80, 15, epd_bitmap_inosee, 42, 42, WHITE); //42x42
-
-  if (remainingTimerTimeSeconds() < 3) {
-    display.drawBitmap(34 + 5, 6, epd_bitmap_inoseeBig, 50, 50, WHITE); //42x42
-  } else {
-    display.drawBitmap(30 + 5, 6, epd_bitmap_iseeBig, 59, 51, WHITE); //42x42
-  }
-
-  // display.drawBitmap(30, 10, epd_bitmap_inoseeBig, 50, 50, WHITE); //42x42
-  // display.drawBitmap(80, 10, epd_bitmap_iseeBig, 59, 51, WHITE); //42x42
-
-
 }
 
 
@@ -939,8 +956,8 @@ void displayTimer() {
     long shortLineLength = map(timeMS, 1000, duration, 0, speed);
     long upLineLength = map(timeMS, 0, duration, 0, speed );
 
-    Serial.print("long: ");
-    Serial.println(longLineLength);
+    // Serial.print("long: ");
+    // Serial.println(longLineLength);
 
     if (longLineLength > 0) {
       display.drawCircle(xPos, yPos, radius, WHITE); // circle
@@ -1020,6 +1037,11 @@ void displayRoundEnd(boolean didWin) {
   display.clearDisplay();
   String randomSaying = didWin ? getRandomPositiveWord() : getRandomNiceTryWord();
   
+  if (currentGame == 3) randomSaying = didWin ? "I no see" : "I see";
+  
+
+
+
   boolean isStringTooLong = randomSaying.length() > 12;
   int textSize = isStringTooLong ? 1 : 2;
 
