@@ -363,6 +363,7 @@ int currentGame = -1;
 
 int INTRO_TIME_DELAY = 1000;
 int GAME_AMOUNT = 3;
+int i = 0;
 boolean hasShownIntro = false;
 
 // timer
@@ -412,34 +413,34 @@ void runGame() {
         break;
     case 1:
         displayMatch();
-        // Code for game 1
         break;
     case 2:
         displayMash();
-        // Code for game 2
         break;
     case 3:
         displayCover();
-        // Code for game 3
         break;
     case 4:
         displayTune();
-
-        // Code for game 4
         break;
     case 5:
-        // Code for game 5
+        displayOpen();
+        break;
+    case 6:
+        displayDodge();
+        break;
+    case 7:
+        displayTilt();
         break;
     default:
         displayMenu();
-        // Code for default case
         break;
   }
 }
 
 
 void testStuff() {
-  displayInputsDEBUG();
+  // displayInputsDEBUG();
 
 
   // display.clearDisplay();
@@ -586,6 +587,253 @@ void displayGAMENAME() {
 
 */
 
+String dMajorNotes[] = {"D5", "D5 Sharp", "E5", "F5", "F5 Sharp", "G5", "G5 Sharp", "A5", "A5 Sharp", "B5", "C6", "C6 Sharp", "D6"}; //D5 to D6
+long dMajorFrequency[] = {587,622,659,698,740,784,831,880,932,988,1047,1109,1175};
+
+const long dMajorArrayLength = 13;
+const long lowestPotValue = 570;
+const long highestPotValue = 4095;
+
+String targetNote = "targetValue";
+
+long firstTimeSeen = 0;
+boolean previouslyTheSame;
+
+void displayTune() {
+  if (!hasShownIntro) {
+    clearTimer();  
+    displayIntro("TUNE");
+
+    // intro put here
+    display.clearDisplay();
+
+  
+    int potValue = analogRead(POT_PIN);
+    long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0] - 100, dMajorFrequency[12] + 100);
+    String currentNote = getCurrentNote(currentFrequency);
+
+    int targetIndex = random(0, 13);
+    targetNote = dMajorNotes[targetIndex];
+
+    previouslyTheSame = false;
+
+    if (targetNote.equals(currentNote)) {
+      targetIndex = random(0, 13);
+      targetNote = dMajorNotes[targetIndex];
+    }
+
+    // int targetFrequencyIndex = getNoteIndex(targetNote);
+
+    // tone(OUTPUT_PIEZO_PIN, dMajorFrequency[targetIndex]);
+
+    displayTextCenter("Target", 1, 0, -5);
+    displayTextCenter(targetNote, 1, 0, 5);
+
+    display.display();
+    delay(1000);
+    setAndStartTimer(10);
+    return;
+  }
+
+  display.clearDisplay();
+  displayUI();
+
+  // game logic here
+  
+  int potValue = analogRead(POT_PIN);
+  long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0] - 100, dMajorFrequency[12] + 100);
+  String currentNote = getCurrentNote(currentFrequency);
+
+  tone(OUTPUT_PIEZO_PIN, currentFrequency);
+
+
+
+
+  boolean isSameNote = currentNote.equals(targetNote);
+
+  if (isSameNote && !previouslyTheSame) {
+    previouslyTheSame = true;
+    firstTimeSeen = remainingTimerTimeMS();
+  } else if (isSameNote && previouslyTheSame) {
+
+    boolean hasEnoughTimePassed = firstTimeSeen - remainingTimerTimeMS() > 1000;
+
+    if (hasEnoughTimePassed) {
+      displayRoundEnd(true);
+      switchGame(true);
+    }
+
+
+
+  } else {
+    firstTimeSeen = 0;
+    previouslyTheSame = false;
+  }
+
+
+
+
+
+  displayTextCenter("Current", 1, -30, -10);
+  displayTextCenter(currentNote, 1, -30, 5);
+
+  displayTextCenter("Target", 1, 30, -10);
+  displayTextCenter(targetNote, 1, 30, 5);
+
+
+
+
+  display.display();
+
+
+  if (checkTimerElasped()) {
+    noTone(OUTPUT_PIEZO_PIN);
+    displayRoundEnd(false);
+    switchGame(false);
+  }
+  
+}
+
+int getNoteIndex(String noteName) {
+
+  for (int i = 0; i < 13; i++) {
+    if (noteName.equals(dMajorNotes[i])) return i;
+  }
+
+  return 0;
+}
+
+String getTargetRandomNote() {
+  int index = random(0, 13);
+  return dMajorNotes[i];
+}
+
+String getCurrentNote(long comparedFrequency) {
+
+  long closest = dMajorFrequency[0];
+  long minDiff = absoluteValue(comparedFrequency - dMajorFrequency[0]); 
+  String closestString = dMajorNotes[0];
+      
+  for (int i = 1; i < 13; i++) {
+    long diff = absoluteValue(comparedFrequency - dMajorFrequency[i]); 
+    if (diff < minDiff) {
+        minDiff = diff;
+        closest = dMajorFrequency[i];
+        closestString = dMajorNotes[i];
+    }
+  }
+
+  return closestString;
+
+}
+
+
+long absoluteValue(long number) {
+
+  return number >= 0 ? number : number * -1;
+
+}
+
+
+
+
+void displayOpen() {
+  if (!hasShownIntro) {
+    clearTimer();
+  
+    displayIntro("GAME NAME");
+
+    // intro put here
+
+
+    setAndStartTimer(10);
+    return;
+  }
+
+  display.clearDisplay();
+  displayUI();
+
+  // game logic here
+
+
+
+  display.display();
+
+
+  if (checkTimerElasped()) {
+    displayRoundEnd(false);
+    switchGame(false);
+  }
+  
+}
+
+
+void displayDodge() {
+  if (!hasShownIntro) {
+    clearTimer();
+  
+    displayIntro("GAME NAME");
+
+    // intro put here
+
+
+    setAndStartTimer(10);
+    return;
+  }
+
+  display.clearDisplay();
+  displayUI();
+
+  // game logic here
+
+
+
+  display.display();
+
+
+  if (checkTimerElasped()) {
+    displayRoundEnd(false);
+    switchGame(false);
+  }
+  
+}
+
+
+
+void displayTilt() {
+  if (!hasShownIntro) {
+    clearTimer();
+  
+    displayIntro("GAME NAME");
+
+    // intro put here
+
+
+    setAndStartTimer(10);
+    return;
+  }
+
+  display.clearDisplay();
+  displayUI();
+
+  // game logic here
+
+
+
+  display.display();
+
+
+  if (checkTimerElasped()) {
+    displayRoundEnd(false);
+    switchGame(false);
+  }
+  
+}
+
+
+
+
+
 
 boolean hasCovered = false;
 
@@ -593,8 +841,6 @@ void displayCover() {
   if (!hasShownIntro) {
     clearTimer();
 
-
-    // init state
     hasCovered = false;
 
     displayIntro("COVER!");
@@ -625,120 +871,31 @@ void displayCover() {
     switchGame(true);
   } else {
     display.drawBitmap(35, 6, epd_bitmap_iseeBig, 59, 51, WHITE); //42x42
+ 
   }
 
 
-  display.display();
 
-  if (checkTimerElasped() && isTimerRunning) {
-    displayRoundEnd(false);
-    switchGame(false);
-  }
-  
-}
-
-
-// d major scale
-// frequencies found from
-// https://en.wikipedia.org/wiki/Piano_key_frequencies#:~:text=The%20frequency%20of%20a%20pitch,the%20twelfth%20root%20of%20two.
-
-String dMajorNotes[] = {"D5", "D5 Sharp", "E5", "F5", "F5 Sharp", "G5", "G5 Sharp", "A5", "A5 Sharp", "B5", "C6", "C6 Sharp", "D6"}; //D5 to D6
-long dMajorFrequency[] = {587,622,659,698,740,784,831,880,932,988,1047,1109,1175};
-
-const long dMajorArrayLength = 13;
-const long lowestPotValue = 570;
-const long highestPotValue = 4095;
-
-
-// String targetNote = "";
-// boolean lastIsHeld = 0;
-// long lastIsHeldTime = 0;
-
-void displayTune() {
-  if (!hasShownIntro) {
-    clearTimer();
-    displayIntro("TUNE!");
-
-    // int potValue = analogRead(POT_PIN);
-    // long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0], dMajorFrequency[11]);
-    // String currentNote = getCurrentNote(currentFrequency);
-
-
-    // while (!targetNote.equals(currentNote)) {
-    //   targetNote = getRandomNote();
-    // }
-
-    // lastIsHeld = false;
-    // lastIsHeldTime = 0;
-
-    setAndStartTimer(20);
-    return;
-  }
-
-  display.clearDisplay();
-  displayUI();
-
-
-  // int potValue = analogRead(POT_PIN);
-  // long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0], dMajorFrequency[11]);
-  // String currentNote = getCurrentNote(currentFrequency);
-  // boolean isSameNote = currentNote.equals(targetNote);
-  // boolean hasHeldEnough = lastIsHeldTime - remainingTimerTimeMS() > 1000;
-
-  // if (isSameNote && lastIsHeld && hasHeldEnough) {
-  //   clearTimer();
-  //   displayRoundEnd(true);
-  //   switchGame(true);
-  // } else if (isSameNote && !lastIsHeld) {
-  //     lastIsHeldTime = remainingTimerTimeMS();
+  // if (remainingTimerTimeSeconds() < 3) {
+  //   display.drawBitmap(39, 6, epd_bitmap_inoseeBig, 50, 50, WHITE); //42x42
   // } else {
-  //     lastIsHeldTime = 0;
+  //   display.drawBitmap(35, 6, epd_bitmap_iseeBig, 59, 51, WHITE); //42x42
   // }
 
-  // lastIsHeld = isSameNote;
-
-
-  // displayTextCenter("Your note", 1, -5, -20);
-  // displayTextCenter(currentNote, 1, -5, 0);
-
-  // displayTextCenter("Target", 1, 5, -20);
-  // displayTextCenter(targetNote, 1, 5, 0);
+  // // displayEyes();
 
 
 
   display.display();
 
 
-  if (checkTimerElasped()) {
+ if (checkTimerElasped() && isTimerRunning) {
     displayRoundEnd(false);
     switchGame(false);
   }
+
   
 }
-
-
-String getCurrentNote(long comparedFrequency) {
-
-  long smallestDifference = 9000;
-  String smallestNote = "base case";
-
-  // // i could do binary search on this but im not lol
-  for (int i = 0; i < dMajorArrayLength; i++) {
-    long currentFrequency = dMajorFrequency[i];
-    long currentDifference = currentFrequency - comparedFrequency;
-
-    if (currentDifference < smallestDifference && currentDifference >= 0) {
-      smallestDifference = currentDifference;
-      smallestNote = dMajorNotes[i]; 
-    } 
-  }
-
-  return smallestNote;
-
-}
-
-
-
 
 
 
@@ -1129,6 +1286,8 @@ void displayRoundEnd(boolean didWin) {
   if (currentGame == 3) randomSaying = didWin ? "I no see" : "I see";
   
 
+
+
   boolean isStringTooLong = randomSaying.length() > 12;
   int textSize = isStringTooLong ? 1 : 2;
 
@@ -1152,8 +1311,10 @@ void updateButtonStates() {
   for (int i = 0; i < buttonAmount; i++) {
     int rawButtonValue = digitalRead(buttonPins[i]);
     if(rawButtonValue != previousRawButtonValues[i]) buttonStateChangeTimestamps[i] = millis();
+    
     unsigned long difference = millis() - buttonStateChangeTimestamps[i];
-    if (difference >= DEBOUNCE_WINDOW) debouncedButtonValues[i] = rawButtonValue;
+
+    if(difference >= DEBOUNCE_WINDOW) debouncedButtonValues[i] = rawButtonValue;
     previousRawButtonValues[i] = rawButtonValue;
   }
 }
@@ -1246,11 +1407,6 @@ String getRandomNiceTryWord() {
   return niceTryWords[index];
 }
 
-String getRandomNote() {
-  int index = random(sizeof(dMajorNotes) / sizeof(dMajorNotes[0]));
-  return dMajorNotes[index];
-}
-
 int getRandomGame() {
   if (GAME_DEBUG_FLAG) return DEBUG_GAME_NUMBER;
 
@@ -1303,11 +1459,6 @@ int remainingTimerTimeSeconds() {
   if (checkTimerElasped()) return 0;
   return (int) ((duration - (millis() - startTime)) / 1000);
 }
-
-
-
-
-
 
 
 

@@ -617,10 +617,10 @@ void displayTune() {
 
     previouslyTheSame = false;
 
-    if (targetNote.equals(currentNote)) {
-      targetIndex = random(0, 13);
-      targetNote = dMajorNotes[targetIndex];
-    }
+    // if (targetNote.equals(currentNote)) {
+    //   targetIndex = random(0, 13);
+    //   targetNote = dMajorNotes[targetIndex];
+    // }
 
     // int targetFrequencyIndex = getNoteIndex(targetNote);
 
@@ -644,10 +644,7 @@ void displayTune() {
   long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0] - 100, dMajorFrequency[12] + 100);
   String currentNote = getCurrentNote(currentFrequency);
 
-  tone(OUTPUT_PIEZO_PIN, currentFrequency);
-
-
-
+  // tone(OUTPUT_PIEZO_PIN, currentFrequency);
 
   boolean isSameNote = currentNote.equals(targetNote);
 
@@ -670,17 +667,11 @@ void displayTune() {
     previouslyTheSame = false;
   }
 
-
-
-
-
   displayTextCenter("Current", 1, -30, -10);
   displayTextCenter(currentNote, 1, -30, 5);
 
   displayTextCenter("Target", 1, 30, -10);
   displayTextCenter(targetNote, 1, 30, 5);
-
-
 
 
   display.display();
@@ -1459,7 +1450,6 @@ int remainingTimerTimeSeconds() {
   if (checkTimerElasped()) return 0;
   return (int) ((duration - (millis() - startTime)) / 1000);
 }
-
 
 
 
