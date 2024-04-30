@@ -523,7 +523,6 @@ void displayInputsDEBUG() {
   displayText("light value: " + String(lightValue), 1, 5, 45);
 
 
-
   display.display();
 
 }
@@ -616,13 +615,7 @@ void displayTune() {
     targetNote = dMajorNotes[targetIndex];
 
     previouslyTheSame = false;
-
-    // if (targetNote.equals(currentNote)) {
-    //   targetIndex = random(0, 13);
-    //   targetNote = dMajorNotes[targetIndex];
-    // }
-
-    // int targetFrequencyIndex = getNoteIndex(targetNote);
+    firstTimeSeen = 0;
 
     // tone(OUTPUT_PIEZO_PIN, dMajorFrequency[targetIndex]);
 
@@ -732,14 +725,17 @@ void displayOpen() {
   if (!hasShownIntro) {
     clearTimer();
   
-    displayIntro("GAME NAME");
+    displayIntro("Open");
+    
 
     // intro put here
-
-
-    setAndStartTimer(10);
+    setAndStartTimer(20);
     return;
   }
+
+  int potValue = analogRead(POT_PIN);
+
+  
 
   display.clearDisplay();
   displayUI();
@@ -1312,11 +1308,17 @@ void updateButtonStates() {
 
 void displayMenuButtons() {
 
-  String menuOptions[] = {"play", "score"};
-  int menuButtonLength = *(&menuOptions + 1) - menuOptions;
+  // String menuOptions[] = {"play", "score"};
+  // int menuButtonLength = *(&menuOptions + 1) - menuOptions;
+  // int xPositions[] = {3, 68};
+  // int yPositions[] = {60, 60};
 
-  int xPositions[] = {3, 68};
-  int yPositions[] = {60, 60};
+  String menuOptions[] = {"play"};
+  int menuButtonLength = *(&menuOptions + 1) - menuOptions;
+  int xPositions[] = {3};
+  int yPositions[] = {60};
+
+
   int textSize = 2;
 
   boolean isButtonPressed = getButtonValue(RIGHT_BUTTON_PIN) == HIGH;
