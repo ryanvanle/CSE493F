@@ -604,6 +604,23 @@ void displayTune() {
     // intro put here
     display.clearDisplay();
 
+  
+    int potValue = analogRead(POT_PIN);
+    long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0] - 100, dMajorFrequency[12] + 100);
+    String currentNote = getCurrentNote(currentFrequency);
+
+    int targetIndex = random(0, 13);
+    targetNote = dMajorNotes[targetIndex];
+
+    if (targetNote.equals(currentNote)) {
+      targetIndex = random(0, 13);
+      targetNote = dMajorNotes[targetIndex];
+    }
+
+    // int targetFrequencyIndex = getNoteIndex(targetNote);
+
+    // tone(OUTPUT_PIEZO_PIN, dMajorFrequency[targetFrequencyIndex]);
+
     displayTextCenter("Target", 1, 0, -5);
     displayTextCenter(targetNote, 1, 0, 5);
 
@@ -617,11 +634,12 @@ void displayTune() {
   displayUI();
 
   // game logic here
-
   
-  // int potValue = analogRead(POT_PIN);
-  // long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0], dMajorFrequency[11]);
-  // String currentNote = getCurrentNote(currentFrequency);
+  int potValue = analogRead(POT_PIN);
+  long currentFrequency = map(potValue, lowestPotValue, highestPotValue, dMajorFrequency[0] - 100, dMajorFrequency[12] + 100);
+  String currentNote = getCurrentNote(currentFrequency);
+
+  tone(OUTPUT_PIEZO_PIN, currentFrequency);
 
 
   // boolean isSameNote = currentNote.equals(targetNote);
@@ -631,7 +649,7 @@ void displayTune() {
   displayTextCenter(currentNote, 1, -30, 5);
 
   displayTextCenter("Target", 1, 30, -10);
-  displayTextCenter(dMajorNotes[1], 1, 30, 5);
+  displayTextCenter(targetNote, 1, 30, 5);
 
 
 
@@ -640,29 +658,50 @@ void displayTune() {
 
 
   if (checkTimerElasped()) {
+    noTone(OUTPUT_PIEZO_PIN);
     displayRoundEnd(false);
     switchGame(false);
   }
   
 }
 
-String getCurrentNote(long comparedFrequency) {
+int getNoteIndex(String noteName) {
 
-  long smallestDifference = 9000;
-  String smallestNote = "base case";
-
-  // // i could do binary search on this but im not lol
   for (int i = 0; i < 13; i++) {
-    long currentFrequency = dMajorFrequency[i];
-    long currentDifference = 1000 + currentFrequency - comparedFrequency;
-
-    if (currentDifference < smallestDifference && currentDifference >= 0) {
-      smallestDifference = currentDifference;
-      smallestNote = dMajorNotes[i]; 
-    } 
+    if (noteName.equals(dMajorNotes[i])) return i;
   }
 
-  return smallestNote;
+  return 0;
+}
+
+String getTargetRandomNote() {
+  int index = random(0, 13);
+  return dMajorNotes[i];
+}
+
+String getCurrentNote(long comparedFrequency) {
+
+  long closest = dMajorFrequency[0];
+  long minDiff = absoluteValue(comparedFrequency - dMajorFrequency[0]); 
+  String closestString = dMajorNotes[0];
+      
+  for (int i = 1; i < 13; i++) {
+    long diff = absoluteValue(comparedFrequency - dMajorFrequency[i]); 
+    if (diff < minDiff) {
+        minDiff = diff;
+        closest = dMajorFrequency[i];
+        closestString = dMajorNotes[i];
+    }
+  }
+
+  return closestString;
+
+}
+
+
+long absoluteValue(long number) {
+
+  return number >= 0 ? number : number * -1;
 
 }
 
