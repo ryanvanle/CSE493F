@@ -18,8 +18,7 @@ let cursor;
 let previousStrokes = [];
 
 let shakeCount = 0;
-let currentMode = 0;
-
+let currentMode = 1;
 
 let modes = [
   "draw",
@@ -46,6 +45,9 @@ function setup() {
   serial.on(SerialEvents.CONNECTION_CLOSED, onSerialConnectionClosed);
   serial.on(SerialEvents.DATA_RECEIVED, onSerialDataReceived);
   serial.on(SerialEvents.ERROR_OCCURRED, onSerialErrorOccurred);
+
+  // serial.on(SerialEvents.DATA_RECEIVED, onSerialDataReceived);
+
 
   // If we have previously approved ports, attempt to connect with them
   // serial.autoConnectAndOpenPreviouslyApprovedPort(serialOptions);
@@ -130,9 +132,6 @@ function drawShape(shapeString, currentCursor) {
 }
 
 
-
-
-
 function processData(newData) {
 
   previousRawValue = currentRawValue;
@@ -213,14 +212,34 @@ function colorPickerMode() {
 
   let tiltPosition = Math.floor(controllerValues.zAcceleration);
 
-  let newRGBValues = getNewHSLValues(structuredClone(cursor.color), tiltPosition);
+  let newHSLValues = getNewHSLValues(structuredClone(cursor.color), tiltPosition);
 
-  cursor.color = newRGBValues;
+  cursor.color = newHSLValues;
+
+  serialWriteLight(newHSLValues);
+
 
 
   id("color").style["background-color"] = `hsl(${cursor.color[0]} ${cursor.color[1]} ${cursor.color[2]})`
 
 }
+
+
+async function serialWriteLight(HSLColors) {
+
+  if (serial.isOpen()) {
+
+    let normalizedHue = map(HSLColors[0], 0.0, 360.0, 0.0, 1.0);
+    let stringOutput = `${normalizedHue},${HSLColors[1]},${HSLColors[2]}`;
+    console.log("sends", stringOutput);
+
+    serial.writeLine(stringOutput);
+  }
+}
+
+
+
+
 
 function sizePickerMode() {
   id("mode").textContent = "Change Brush Size Mode"
@@ -287,9 +306,6 @@ function getNewCursorSize(currentSize, incrementAmount) {
 }
 
 
-
-
-
 function getNewHSLValues(initialColors, incrementAmount) {
 
 
@@ -309,8 +325,6 @@ function getNewHSLValues(initialColors, incrementAmount) {
 
 
   }
-
-  console.log(initialColors);
 
 
   return initialColors;
@@ -444,6 +458,8 @@ function onSerialConnectionClosed(eventSender) {
 function onSerialDataReceived(eventSender, newData) {
   // console.log("onSerialDataReceived", newData);
   id("data").textContent = "onSerialDataReceived: " + newData;
+
+  if (newData.startsWith("#")) return;
   processData(newData);
 }
 
