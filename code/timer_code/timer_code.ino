@@ -76,19 +76,19 @@ void setup() {
 }
 
 void loop() {
-  if (!isTimerRunning) {
-    setAndStartTimer(8);
-  }
+  // if (!isTimerRunning) {
+  //   setAndStartTimer(8);
+  // }
   
   display.clearDisplay();
-  displayText(String(remainingTimerTimeSeconds()), 1, 20, 20);
-  displayUI();
+  displayTextCenter("GAME OVER!", 2, 0, -5);
+  displayTextCenter("final score: " + String(0), 1, 0, 10);
   display.display();
 
 
-  if (checkTimerElasped()) {
-    clearTimer();
-  }
+  // if (checkTimerElasped()) {
+  //   clearTimer();
+  // }
 }
 
 boolean pulse = false;

@@ -345,7 +345,7 @@ unsigned long buttonStateChangeTimestamps[] = {0, 0};
 const int DEBOUNCE_WINDOW = 0; // in milliseconds
 
 // buzzer
-int OUTPUT_PIEZO_PIN = 12;
+int OUTPUT_PIEZO_PIN = 13;
 
 // menu
 enum menuButton {
@@ -364,7 +364,7 @@ int currentLives = 3;
 int currentGame = -1;
 
 int INTRO_TIME_DELAY = 1000;
-int GAME_AMOUNT = 4;
+int GAME_AMOUNT = 3;
 int i = 0;
 boolean hasShownIntro = false;
 
@@ -406,7 +406,7 @@ void setup(){
 
 boolean DEBUG_FLAG = false;
 
-boolean GAME_DEBUG_FLAG = true;
+boolean GAME_DEBUG_FLAG = false;
 int DEBUG_GAME_NUMBER = 1; 
 
 
@@ -1271,55 +1271,25 @@ void displayRoundEnd(boolean didWin) {
   String randomSaying = didWin ? getRandomPositiveWord() : getRandomNiceTryWord();
   
   if (currentGame == 3) randomSaying = didWin ? "I no see" : "I see";
+  
+
+
 
   boolean isStringTooLong = randomSaying.length() > 12;
   int textSize = isStringTooLong ? 1 : 2;
 
 
   if (!didWin) display.invertDisplay(true);
-
-    // delay(1000);
-
-
   displayTextCenter(randomSaying, textSize, 0, 0); 
   display.display();
-
-  if (didWin) {
-    playWinTone();
-  } else {
-    playLoseTone();
-  }
-  
-
   delay(1000);
 }
 
 void playWinTone() {
-  noTone(OUTPUT_PIEZO_PIN);
-  
-  tone(OUTPUT_PIEZO_PIN, dMajorFrequency[0]);
 
-  delay(250);
-
-  tone(OUTPUT_PIEZO_PIN, dMajorFrequency[12]);
-
-  delay(400);
-
-  noTone(OUTPUT_PIEZO_PIN);
 }
 
 void playLoseTone() {
-  noTone(OUTPUT_PIEZO_PIN);
-  
-  tone(OUTPUT_PIEZO_PIN, dMajorFrequency[12]);
-
-  delay(250);
-
-  tone(OUTPUT_PIEZO_PIN, dMajorFrequency[0]);
-
-  delay(400);
-
-  noTone(OUTPUT_PIEZO_PIN);
 
 }
 
