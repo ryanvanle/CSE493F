@@ -20,11 +20,20 @@ let previousStrokes = [];
 let shakeCount = 0;
 let currentMode = 2;
 
+
 let modes = [
   "draw",
   "color",
   "size",
-  "clear"
+  "clear",
+  "shape",
+]
+
+let currentShape = 0;
+let shapes = [
+  "circle",
+  "square",
+  "triangle"
 ]
 
 
@@ -174,11 +183,46 @@ function colorPickerMode() {
 
 function sizePickerMode() {
   id("mode").textContent = "Change Brush Size Mode"
+  let tiltPosition = Math.floor(controllerValues.zAcceleration);
+  let newCursorSize = getNewCursorSize(cursor.size, tiltPosition);
+  cursor.size = newCursorSize;
 }
+
+function shapePickerMode() {
+
+
+}
+
 
 function clearPickerMode() {
   id("mode").textContent = "Clear Canvas Mode"
 }
+
+
+function getNewCursorSize(currentSize, incrementAmount) {
+  let initialSize = currentSize
+  let isNegative = incrementAmount < 0;
+  let increment = 1;
+  if (isNegative) increment = -1;
+
+  for (let i = 0; i < Math.abs(incrementAmount); i++) {
+
+    initialSize += increment;
+
+    if (initialSize < 10) {
+      initialSize = 10;
+    } else if (initialSize > 100) {
+      initialSize = 100;
+    }
+
+
+  }
+  return initialSize;
+
+}
+
+
+
 
 
 function getNewHSLValues(initialColors, incrementAmount) {
