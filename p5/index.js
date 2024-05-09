@@ -18,7 +18,7 @@ let cursor;
 let previousStrokes = [];
 
 let shakeCount = 0;
-let currentMode = 2;
+let currentMode = 0;
 
 
 let modes = [
@@ -52,19 +52,26 @@ function setup() {
 
   // Add in a lil <p> element to provide messages. This is optional
   id("data").textContent = "Click anywhere on this page to open the serial connection dialog"
+  id("mode").textContent = "Connecting Mode"
+
 
   cursor = {
     x: width/2,
     y: height/2,
     size: 100,
-    color: [50, 75, 25]
+    color: [50, 75, 25],
+    shape: "circle"
   }
+
 
   colorMode(HSL);
 }
 
 function draw() {
   background(backgroundImage);
+  // circle(width/2, height/2, 1)
+
+
   drawPreviousStrokes();
   drawCursor();
 }
@@ -86,11 +93,40 @@ function drawCursor() {
 
   noFill();
 
-  circle(cursor.x, cursor.y, cursor.size);
+  drawShape(cursor.shape, cursor);
+  // circle(cursor.x, cursor.y, cursor.size);
 }
 
 function preload() {
   backgroundImage = loadImage("brick-wall.jpeg");
+}
+
+
+function drawShape(shapeString, currentCursor) {
+
+  let x = currentCursor.x;
+  let y = currentCursor.y;
+  let size = currentCursor.size;
+
+  let halfSize = Math.floor(size / 2)
+
+  if (shapeString == "circle") {
+    circle(x, y, size);
+  } else if (shapeString == "square") {
+    rect(x-halfSize, y-halfSize, size, size);
+  } else if (shapeString == "triangle") {
+    let x1 = x - halfSize;
+    let y1 = y + halfSize;
+
+    let x2 = x + halfSize;
+    let y2 = y + halfSize;
+
+    let x3 = x
+    let y3 = y - halfSize;
+
+    triangle(x1,y1,x2,y2,x3,y3);
+  }
+
 }
 
 
@@ -116,6 +152,8 @@ function processData(newData) {
   let isShaking = checkShaking();
   let isButtonPressed = controllerValues.buttonPressed == 1.00;
 
+  console.log(isButtonPressed)
+
   id("color").style["background-color"] = `hsl(${cursor.color[0]} ${cursor.color[1]} ${cursor.color[2]})`
 
   if (isShaking) shakeCount++;
@@ -124,7 +162,7 @@ function processData(newData) {
   if (hasEnoughShakes && !isButtonPressed) {
     shakeCount = 0;
     currentMode = (currentMode + 1) % modes.length;
-  } else if (isButtonPressed) {
+  } else if (isButtonPressed && currentMode != 4) {
     shakeCount = 0;
     currentMode = 0;
   }
@@ -145,12 +183,14 @@ function switchModes() {
   }
 
   else if (currentMode == 2) {
-
     sizePickerMode();
   }
 
   else if (currentMode == 3) {
+    shapePickerMode();
+  }
 
+  else if (currentMode == 4) {
     clearPickerMode();
   }
 
@@ -161,6 +201,7 @@ function drawMode() {
   id("mode").textContent = "Draw Mode";
 
   updateCursorPosition();
+  drawCursor();
   if (controllerValues.buttonPressed == 1.00) {
     drawAtCursor();
   }
@@ -168,7 +209,7 @@ function drawMode() {
 }
 
 function colorPickerMode() {
-  id("mode").textContent = "Color Picker Mode EHASKDJASHJK";
+  id("mode").textContent = "Color Picker Mode";
 
   let tiltPosition = Math.floor(controllerValues.zAcceleration);
 
@@ -189,13 +230,37 @@ function sizePickerMode() {
 }
 
 function shapePickerMode() {
-
-
+  id("mode").textContent = "Change Shape Mode";
+  let tiltPosition = Math.floor(controllerValues.zAcceleration);
+  let newShape = getNewShape(tiltPosition);
+  cursor.shape = newShape;
 }
 
 
 function clearPickerMode() {
-  id("mode").textContent = "Clear Canvas Mode"
+  id("mode").textContent = "Clear Canvas Mode, on press to clear";
+
+  let isButtonPressed = controllerValues.buttonPressed == 1.00;
+
+  if (isButtonPressed) {
+    previousStrokes = [];
+    currentMode = 0;
+  }
+
+}
+
+
+function getNewShape(tiltPosition) {
+
+  if (-9 <= tiltPosition && tiltPosition <= -4) {
+    return shapes[1];
+  } else if (-3 <= tiltPosition && tiltPosition <= 4) {
+    return shapes[0];
+  } else if (5 <= tiltPosition && tiltPosition <= 10) {
+    return shapes[2];
+  }
+
+
 }
 
 
@@ -284,11 +349,10 @@ function updateCursorPosition() {
 
 function drawPreviousStrokes() {
 
-  // console.log(previousStrokes);
   for (let currentCursor of previousStrokes) {
     noStroke();
     fill(currentCursor.color[0], currentCursor.color[1], currentCursor.color[2]);
-    circle(currentCursor.x, currentCursor.y, currentCursor.size);
+    drawShape(currentCursor.shape, currentCursor);
   }
 
 }
